@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <title>Painel de Documentos com Pastas e Diretório</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="dashboard">
+    <aside class="sidebar">
+      <img src="dwn.png" alt="Logo da Empresa" class="logo" />
+      <nav>
+        <ul>
+          <li><a href="#" onclick="mostrarSecao('documentos')" id="menuDocumentos" class="active">📁 <span>Documentos</span></a></li>
+          <li><a href="diretorio2.html" id="menuDiretorio">📂 <span>Diretório</span></a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <section id="secaoDocumentos">
+        <div class="top-bar">
+          <h1 id="tituloPrincipal">Gestão de Documentos com Pastas</h1>
+        </div>
+
+        <div id="mensagem" class="mensagem"></div>
+
+        <section class="cards">
+          <div class="card" id="total-docs">📄 Total de Documentos: 0</div>
+          <div class="card" id="total-pastas">📂 Pastas Cadastradas: 0</div>
+        </section>
+
+        <section class="filters">
+          <select id="filtroPasta">
+            <option value="todas">Todas as pastas</option>
+          </select>
+          <input type="text" id="pesquisa" placeholder="🔍 Pesquisar documentos..." />
+        </section>
+
+        <form id="formCriarPasta" style="margin-bottom:20px;">
+          <input type="text" id="nomePasta" placeholder="Nome da nova pasta" required />
+          <button type="submit">➕ Criar Pasta</button>
+        </form>
+
+        <form id="docForm">
+          <input type="text" id="nome" placeholder="Nome do Documento (opcional)" />
+          <select id="pastaExistente" required>
+            <option value="">Selecionar pasta existente</option>
+          </select>
+          <div class="file-upload-wrapper">
+            <button type="button" class="btn-upload">Escolher arquivos</button>
+            <input type="file" id="arquivo" multiple required />
+            <span id="file-name">Nenhum arquivo selecionado</span>
+          </div>
+          <button type="submit">📤 Adicionar Documentos</button>
+        </form>
+
+        <table id="docTable">
+          <thead>
+            <tr>
+              <th>Documento</th>
+              <th>Pasta</th>
+              <th>Arquivo</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

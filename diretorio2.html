@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gerenciador de Documentos</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #ffffff;
+      color: #003399;
+    }
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+    .sidebar {
+      width: 250px;
+      background-color: #e6ecff;
+      padding: 20px;
+      border-right: 2px solid #003399;
+      display: flex;
+      flex-direction: column;
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo img {
+      max-width: 100%;
+      height: auto;
+    }
+    h1 {
+      font-size: 18px;
+      text-align: center;
+      margin-bottom: 20px;
+      color: #003399;
+    }
+    #novaPastaInput {
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #003399;
+      background-color: white;
+      color: #003399;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    #btnCriarPasta {
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      background-color: #003399;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    #btnCriarPasta:hover {
+      background-color: #001f66;
+    }
+    .main {
+      flex: 1;
+      padding: 30px;
+      background-color: #f9fbff;
+      overflow-y: auto;
+    }
+    #tituloPastaContainer {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      color: #003399;
+    }
+    #tituloPasta {
+      font-size: 24px;
+      flex-grow: 1;
+    }
+    #btnSairPasta {
+      margin-left: 20px;
+      padding: 6px 12px;
+      background-color: #003399;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      display: none;
+    }
+    #btnSairPasta:hover {
+      background-color: #001f66;
+    }
+    #pesquisaArquivos {
+      margin-bottom: 15px;
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #003399;
+      color: #003399;
+      background-color: white;
+      display: none;
+    }
+    #containerPesquisaInicial {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    #inputPesquisaInicial {
+      flex-grow: 1;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #003399;
+      color: #003399;
+      background-color: white;
+      font-size: 16px;
+      min-width: 250px;
+    }
+    #selectTipoPesquisa {
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #003399;
+      background-color: white;
+      color: #003399;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .form-upload {
+      display: none;
+      margin-bottom: 20px;
+      gap: 10px;
+      align-items: center;
+    }
+    #inputArquivo {
+      display: none;
+    }
+    .btn-escolher-arquivo {
+      padding: 10px 16px;
+      background-color: #003399;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-escolher-arquivo:hover {
+      background-color: #001f66;
+    }
+    .nome-arquivo-selecionado {
+      margin-left: 10px;
+      font-size: 14px;
+      color: #003399;
+      font-style: italic;
+      max-width: 250px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #inputRenomearArquivo {
+      padding: 6px 8px;
+      font-size: 14px;
+      border-radius: 5px;
+      border: 1px solid #003399;
+      color: #003399;
+      max-width: 250px;
+      display: none;
+    }
+    .btn-enviar-arquivo {
+      padding: 10px 16px;
+      background-color: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-enviar-arquivo:hover {
+      background-color: #004c99;
+    }
+    .arquivo-card {
+      background-color: #ffffff;
+      border: 1px solid #ccd9ff;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .arquivo-card strong {
+      font-size: 1.1em;
+      word-break: break-word;
+      color: #003399;
+      flex-grow: 1;
+      margin-left: 10px;
+    }
+    .arquivo-card .nome-pasta-resultado {
+      font-size: 0.85em;
+      color: #6666cc;
+      margin-left: 10px;
+      font-style: italic;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .arquivo-card button {
+      margin-left: 8px;
+      background-color: #003399;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .arquivo-card button:hover {
+      background-color: #001f66;
+    }
+    .arquivo-card button[title="Excluir"] {
+      background-color: #cc0000;
+    }
+    .arquivo-card button[title="Excluir"]:hover {
+      background-color: #990000;
+    }
+    .icone {
+      font-size: 40px;
+      margin-bottom: 8px;
+    }
+    #pastasCardsContainer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .pasta-card {
+      background-color: #f2f6ff;
+      border: 1px solid #ccd9ff;
+      border-radius: 8px;
+      padding: 15px;
+      width: 180px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s;
+      user-select: none;
+      position: relative;
+    }
+    .pasta-card:hover {
+      background-color: #d6e0ff;
+    }
+    .pasta-card .icone-pasta {
+      font-size: 50px;
+      color: #003399;
+      margin-bottom: 10px;
+    }
+    .pasta-card .nome-pasta {
+      color: #003399;
+      font-weight: bold;
+      text-align: center;
+      word-break: break-word;
+      margin-bottom: 8px;
+    }
+    .pasta-card .btn-excluir-pasta-card {
+      position: absolute;
+      top: 5px;
+      right: 8px;
+      background: none;
+      border: none;
+      color: #cc0000;
+      font-size: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <div class="logo">
+        <img src="dwn.png" alt="Logo DONGWON" />
+      </div>
+      <h1>Nova Pasta</h1>
+      <input type="text" id="novaPastaInput" placeholder="Nome da nova pasta..." />
+      <button id="btnCriarPasta">Criar Pasta</button>
+    </div>
+    <div class="main">
+      <div id="tituloPastaContainer">
+        <h2 id="tituloPasta">Selecione uma pasta</h2>
+        <button id="btnSairPasta">⬅️ Sair da Pasta</button>
+      </div>
+
+      <!-- Pesquisa inicial -->
+      <div id="containerPesquisaInicial">
+        <input type="text" id="inputPesquisaInicial" placeholder="Pesquisar..." />
+        <select id="selectTipoPesquisa" title="Escolha o tipo de pesquisa">
+          <option value="pastas">Pastas</option>
+          <option value="arquivos">Arquivos</option>
+          <option value="ambos" selected>Ambos</option>
+        </select>
+      </div>
+
+      <input type="text" id="pesquisaArquivos" placeholder="Pesquisar arquivos..." />
+
+      <form id="formUpload" class="form-upload">
+        <label for="inputArquivo" class="btn-escolher-arquivo">Escolher arquivo</label>
+        <span id="nomeArquivoSelecionado" class="nome-arquivo-selecionado"></span>
+        <input type="file" id="inputArquivo" required />
+        <input type="text" id="inputRenomearArquivo" placeholder="Renomear arquivo (opcional)" />
+        <button type="submit" class="btn-enviar-arquivo">📤 Enviar</button>
+      </form>
+
+      <div id="arquivosGrid"></div>
+      <div id="pastasCardsContainer"></div>
+    </div>
+  </div>
+
+  <script>
+    let pastaSelecionada = null;
+    let arquivosNaPasta = [];
+    let nomeOriginalArquivo = "";
+
+    function carregarPastas() {
+      const pastas = JSON.parse(localStorage.getItem("pastas")) || [];
+      mostrarPastasEmCards(pastas);
+    }
+
+    function mostrarPastasEmCards(pastas) {
+      const cardsContainer = document.getElementById("pastasCardsContainer");
+      const arquivosGrid = document.getElementById("arquivosGrid");
+
+      arquivosGrid.style.display = "none";
+      cardsContainer.style.display = "flex";
+      cardsContainer.innerHTML = "";
+
+      if (pastas.length === 0) {
+        cardsContainer.innerHTML = "<p>Nenhuma pasta criada.</p>";
+        return;
+      }
+
+      pastas.forEach(pasta => {
+        const card = document.createElement("div");
+        card.className = "pasta-card";
+        card.title = pasta;
+        card.onclick = () => {
+          selecionarPasta(pasta);
+        };
+
+        const icone = document.createElement("div");
+        icone.className = "icone-pasta";
+        icone.textContent = "📁";
+
+        const nome = document.createElement("div");
+        nome.className = "nome-pasta";
+        nome.textContent = pasta;
+
+        const btnExcluir = document.createElement("button");
+        btnExcluir.className = "btn-excluir-pasta-card";
+        btnExcluir.title = `Excluir pasta "${pasta}"`;
+        btnExcluir.textContent = "×";
+        btnExcluir.onclick = (e) => {
+          e.stopPropagation();
+          if (confirm(`Deseja excluir a pasta "${pasta}" e todos os seus arquivos?`)) {
+            excluirPasta(pasta);
+          }
+        };
+
+        card.appendChild(icone);
+        card.appendChild(nome);
+        card.appendChild(btnExcluir);
+        cardsContainer.appendChild(card);
+      });
+    }
+
+    function criarPasta() {
+      const input = document.getElementById("novaPastaInput");
+      const nome = input.value.trim();
+      if (!nome) {
+        alert("Digite um nome para a pasta.");
+        return;
+      }
+
+      const pastas = JSON.parse(localStorage.getItem("pastas")) || [];
+      if (pastas.includes(nome)) {
+        alert("Essa pasta já existe.");
+        return;
+      }
+      pastas.push(nome);
+      localStorage.setItem("pastas", JSON.stringify(pastas));
+      input.value = "";
+      carregarPastas();
+    }
+
+    function selecionarPasta(pasta) {
+      pastaSelecionada = pasta;
+      document.getElementById("tituloPasta").textContent = `📁 ${pasta}`;
+      document.getElementById("formUpload").style.display = "flex";
+      const pesquisa = document.getElementById("pesquisaArquivos");
+      pesquisa.style.display = "block";
+      pesquisa.value = "";
+      pesquisa.oninput = () => filtrarArquivos(pesquisa.value);
+
+      document.getElementById("arquivosGrid").style.display = "block";
+      document.getElementById("pastasCardsContainer").style.display = "none";
+
+      document.getElementById("btnSairPasta").style.display = "inline-block";
+
+      document.getElementById("containerPesquisaInicial").style.display = "none";
+
+      limparUpload();
+
+      carregarArquivosDaPasta(pasta);
+    }
+
+    function limparUpload() {
+      document.getElementById("inputArquivo").value = "";
+      document.getElementById("nomeArquivoSelecionado").textContent = "";
+      document.getElementById("inputRenomearArquivo").value = "";
+      document.getElementById("inputRenomearArquivo").style.display = "none";
+      nomeOriginalArquivo = "";
+    }
+
+    function carregarArquivosDaPasta(pasta) {
+      const arquivosPorPasta = JSON.parse(localStorage.getItem("arquivosPorPasta")) || {};
+      arquivosNaPasta = arquivosPorPasta[pasta] || [];
+      exibirArquivos(pasta, arquivosNaPasta);
+    }
+
+    function exibirArquivos(pasta, arquivos) {
+      const container = document.getElementById("arquivosGrid");
+      container.innerHTML = "";
+
+      if (arquivos.length === 0) {
+        container.innerHTML = "<p>Nenhum arquivo nesta pasta.</p>";
+        return;
+      }
+
+      arquivos.forEach((arquivo, index) => {
+        const card = document.createElement("div");
+        card.className = "arquivo-card";
+        card.innerHTML = `
+          <div class="icone">📄</div>
+          <strong title="${arquivo.nome}">${arquivo.nome}</strong>
+          <div>
+            <button onclick="visualizarArquivo('${pasta}', ${index})" title="Visualizar">👁️</button>
+            <button onclick="baixarArquivo('${pasta}', ${index})" title="Baixar">⬇️</button>
+            <button onclick="excluirArquivo('${pasta}', ${index})" title="Excluir">🗑️</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function filtrarArquivos(texto) {
+      const textoLower = texto.toLowerCase();
+      const filtrados = arquivosNaPasta.filter(a => a.nome.toLowerCase().includes(textoLower));
+      exibirArquivos(pastaSelecionada, filtrados);
+    }
+
+    function visualizarArquivo(pasta, index) {
+      const arquivo = arquivosNaPasta[index];
+      if (!arquivo) return;
+
+      if (arquivo.tipo === "application/pdf") {
+        const blob = dataURLtoBlob(arquivo.conteudo);
+        const url = URL.createObjectURL(blob);
+        window.open(url, "_blank");
+      } else {
+        alert("Visualização disponível apenas para arquivos PDF.");
+      }
+    }
+
+    function dataURLtoBlob(dataURL) {
+      const [header, base64] = dataURL.split(",");
+      const mime = header.match(/:(.*?);/)[1];
+      const binary = atob(base64);
+      const array = [];
+      for (let i = 0; i < binary.length; i++) {
+        array.push(binary.charCodeAt(i));
+      }
+      return new Blob([new Uint8Array(array)], { type: mime });
+    }
+
+    function baixarArquivo(pasta, index) {
+      const arquivo = arquivosNaPasta[index];
+      if (!arquivo) return;
+
+      const a = document.createElement('a');
+      a.href = arquivo.conteudo;
+      a.download = arquivo.nome;
+      a.click();
+    }
+
+    function excluirArquivo(pasta, index) {
+      arquivosNaPasta.splice(index, 1);
+
+      const arquivosPorPasta = JSON.parse(localStorage.getItem("arquivosPorPasta")) || {};
+      arquivosPorPasta[pasta] = arquivosNaPasta;
+      localStorage.setItem("arquivosPorPasta", JSON.stringify(arquivosPorPasta));
+
+      // Se estiver numa busca, atualizar a busca
+      if (pastaSelecionada) {
+        filtrarArquivos(document.getElementById("pesquisaArquivos").value);
+      } else {
+        realizarBuscaInicial();
+      }
+    }
+
+    function excluirPasta(pasta) {
+      let pastas = JSON.parse(localStorage.getItem("pastas")) || [];
+      let arquivosPorPasta = JSON.parse(localStorage.getItem("arquivosPorPasta")) || {};
+
+      pastas = pastas.filter(p => p !== pasta);
+      delete arquivosPorPasta[pasta];
+
+      localStorage.setItem("pastas", JSON.stringify(pastas));
+      localStorage.setItem("arquivosPorPasta", JSON.stringify(arquivosPorPasta));
+
+      if (pastaSelecionada === pasta) {
+        sairDaPasta();
+      }
+
+      carregarPastas();
+    }
+
+    function sairDaPasta() {
+      pastaSelecionada = null;
+      arquivosNaPasta = [];
+
+      document.getElementById("tituloPasta").textContent = "Selecione uma pasta";
+      document.getElementById("formUpload").style.display = "none";
+      document.getElementById("pesquisaArquivos").style.display = "none";
+      document.getElementById("pesquisaArquivos").value = "";
+      document.getElementById("arquivosGrid").innerHTML = "";
+      document.getElementById("arquivosGrid").style.display = "none";
+      document.getElementById("pastasCardsContainer").style.display = "flex";
+      document.getElementById("btnSairPasta").style.display = "none";
+      document.getElementById("containerPesquisaInicial").style.display = "flex";
+
+      limparUpload();
+
+      carregarPastas();
+      realizarBuscaInicial();
+    }
+
+    document.getElementById("btnSairPasta").addEventListener("click", sairDaPasta);
+
+    document.getElementById("btnCriarPasta").addEventListener("click", criarPasta);
+
+    document.getElementById("inputArquivo").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      const nomeSpan = document.getElementById("nomeArquivoSelecionado");
+      const inputRenomear = document.getElementById("inputRenomearArquivo");
+      if (file) {
+        nomeOriginalArquivo = file.name;
+        nomeSpan.textContent = file.name;
+        inputRenomear.style.display = "inline-block";
+        inputRenomear.value = "";
+        inputRenomear.placeholder = "Renomear arquivo (opcional)";
+      } else {
+        nomeSpan.textContent = "";
+        inputRenomear.style.display = "none";
+        inputRenomear.value = "";
+      }
+    });
+
+    document.getElementById("formUpload").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const input = document.getElementById("inputArquivo");
+      const file = input.files[0];
+      const inputRenomear = document.getElementById("inputRenomearArquivo");
+      let novoNome = inputRenomear.value.trim();
+
+      if (!file || !pastaSelecionada) {
+        alert("Selecione um arquivo e uma pasta.");
+        return;
+      }
+
+      if (novoNome === "") {
+        novoNome = nomeOriginalArquivo;
+      } else {
+        // Se a nova extensão não foi colocada, adiciona a extensão original
+        const pontoIndexOriginal = nomeOriginalArquivo.lastIndexOf(".");
+        const extensaoOriginal = pontoIndexOriginal > 0 ? nomeOriginalArquivo.substring(pontoIndexOriginal) : "";
+        if (!novoNome.toLowerCase().endsWith(extensaoOriginal.toLowerCase())) {
+          novoNome += extensaoOriginal;
+        }
+      }
+
+      const reader = new FileReader();
+      reader.onload = function () {
+        const conteudo = reader.result;
+        const arquivosPorPasta = JSON.parse(localStorage.getItem("arquivosPorPasta")) || {};
+        if (!arquivosPorPasta[pastaSelecionada]) {
+          arquivosPorPasta[pastaSelecionada] = [];
+        }
+
+        arquivosPorPasta[pastaSelecionada].push({
+          nome: novoNome,
+          conteudo: conteudo,
+          tipo: file.type
+        });
+
+        localStorage.setItem("arquivosPorPasta", JSON.stringify(arquivosPorPasta));
+        limparUpload();
+        carregarArquivosDaPasta(pastaSelecionada);
+        document.getElementById("pesquisaArquivos").value = "";
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Nova função: realizar busca na página inicial (fora de pasta)
+    function realizarBuscaInicial() {
+      const termo = document.getElementById("inputPesquisaInicial").value.trim().toLowerCase();
+      const tipo = document.getElementById("selectTipoPesquisa").value;
+
+      const pastas = JSON.parse(localStorage.getItem("pastas")) || [];
+      const arquivosPorPasta = JSON.parse(localStorage.getItem("arquivosPorPasta")) || {};
+
+      const resultadosPastas = [];
+      const resultadosArquivos = [];
+
+      if (tipo === "pastas" || tipo === "ambos") {
+        pastas.forEach(pasta => {
+          if (pasta.toLowerCase().includes(termo)) {
+            resultadosPastas.push(pasta);
+          }
+        });
+      }
+
+      if (tipo === "arquivos" || tipo === "ambos") {
+        pastas.forEach(pasta => {
+          const arquivos = arquivosPorPasta[pasta] || [];
+          arquivos.forEach((arquivo, index) => {
+            if (arquivo.nome.toLowerCase().includes(termo)) {
+              resultadosArquivos.push({ pasta, arquivo, index });
+            }
+          });
+        });
+      }
+
+      const cardsContainer = document.getElementById("pastasCardsContainer");
+      const arquivosGrid = document.getElementById("arquivosGrid");
+
+      cardsContainer.innerHTML = "";
+      arquivosGrid.innerHTML = "";
+
+      // Exibe resultados pastas
+      if (resultadosPastas.length > 0) {
+        resultadosPastas.forEach(pasta => {
+          const card = document.createElement("div");
+          card.className = "pasta-card";
+          card.title = pasta;
+          card.onclick = () => selecionarPasta(pasta);
+
+          const icone = document.createElement("div");
+          icone.className = "icone-pasta";
+          icone.textContent = "📁";
+
+          const nome = document.createElement("div");
+          nome.className = "nome-pasta";
+          nome.textContent = pasta;
+
+          const btnExcluir = document.createElement("button");
+          btnExcluir.className = "btn-excluir-pasta-card";
+          btnExcluir.title = `Excluir pasta "${pasta}"`;
+          btnExcluir.textContent = "×";
+          btnExcluir.onclick = (e) => {
+            e.stopPropagation();
+            if (confirm(`Deseja excluir a pasta "${pasta}" e todos os seus arquivos?`)) {
+              excluirPasta(pasta);
+            }
+          };
+
+          card.appendChild(icone);
+          card.appendChild(nome);
+          card.appendChild(btnExcluir);
+          cardsContainer.appendChild(card);
+        });
+      }
+
+  
+
+      // Mostrar containers adequadamente
+      if (tipo === "pastas") {
+        arquivosGrid.style.display = "none";
+        cardsContainer.style.display = resultadosPastas.length ? "flex" : "block";
+      } else if (tipo === "arquivos") {
+        cardsContainer.style.display = "none";
+        arquivosGrid.style.display = resultadosArquivos.length ? "block" : "none";
+      } else {
+        // ambos
+        cardsContainer.style.display = resultadosPastas.length ? "flex" : "none";
+        arquivosGrid.style.display = resultadosArquivos.length ? "block" : "none";
+      }
+    }
+
+    // Funções para buscar arquivos na tela inicial com ações
+    function visualizarArquivoBusca(pasta, index) {
+      const arquivosPorPasta = JSON.parse(localStorage.getItem("arquivosPorPasta")) || {};
+      const arquivo = arquivosPorPasta[pasta]?.[index];
+      if (!arquivo) return;
+
+      if (arquivo.tipo === "application/pdf") {
+        const blob = dataURLtoBlob(arquivo.conteudo);
+        const url = URL.createObjectURL(blob);
+        window.open(url, "_blank");
+      } else {
+        alert("Visualização disponível apenas para arquivos PDF.");
+      }
+    }
+
+    function baixarArquivoBusca(pasta, index) {
+      const arquivosPorPasta = JSON.parse(localStorage.getItem("arquivosPorPasta")) || {};
+      const arquivo = arquivosPorPasta[pasta]?.[index];
+      if (!arquivo) return;
+
+      const a = document.createElement('a');
+      a.href = arquivo.conteudo;
+      a.download = arquivo.nome;
+      a.click();
+    }
+
+    function excluirArquivoBusca(pasta, index) {
+      const arquivosPorPasta = JSON.parse(localStorage.getItem("arquivosPorPasta")) || {};
+      if (!arquivosPorPasta[pasta]) return;
+
+      arquivosPorPasta[pasta].splice(index, 1);
+      localStorage.setItem("arquivosPorPasta", JSON.stringify(arquivosPorPasta));
+
+      realizarBuscaInicial();
+    }
+
+    // Eventos para busca inicial
+    document.getElementById("inputPesquisaInicial").addEventListener("input", realizarBuscaInicial);
+    document.getElementById("selectTipoPesquisa").addEventListener("change", realizarBuscaInicial);
+
+    window.onload = () => {
+      carregarPastas();
+      realizarBuscaInicial();
+      document.getElementById("formUpload").style.display = "none";
+      document.getElementById("pesquisaArquivos").style.display = "none";
+      document.getElementById("arquivosGrid").style.display = "none";
+    };
+  </script>
+</body>
+</html>

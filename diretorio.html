@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gerenciador de Documentos</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #f0f0f0;
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+
+    .sidebar {
+      width: 250px;
+      background-color: #1e1e1e;
+      padding: 20px;
+      border-right: 1px solid #333;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h1 {
+      color: #f44336;
+      margin-bottom: 20px;
+    }
+
+    .pasta {
+      padding: 10px;
+      margin-bottom: 8px;
+      background-color: #2a2a2a;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.2s;
+      user-select: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .pasta:hover {
+      background-color: #3a3a3a;
+    }
+
+    .selecionada {
+      background-color: #f44336 !important;
+      color: white;
+    }
+
+    /* Botão excluir pasta */
+    .btn-excluir-pasta {
+      background: transparent;
+      border: none;
+      color: #f87171;
+      font-weight: bold;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0 6px;
+      user-select: none;
+      transition: color 0.3s ease;
+    }
+    .btn-excluir-pasta:hover {
+      color: #b91c1c;
+    }
+
+    /* Input e botão criar pasta */
+    #novaPastaInput {
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      background-color: #2a2a2a;
+      color: #f0f0f0;
+      font-size: 14px;
+      margin-bottom: 10px;
+      outline-offset: 2px;
+      outline-color: #f44336;
+      transition: outline-color 0.3s ease;
+    }
+
+    #novaPastaInput:focus {
+      outline-color: #d32f2f;
+    }
+
+    #btnCriarPasta {
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      background-color: #f44336;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+
+    #btnCriarPasta:hover {
+      background-color: #d32f2f;
+    }
+
+    /* Estilo do formulário upload */
+    .form-upload {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    #pesquisaArquivos {
+      margin-bottom: 15px;
+      width: 100%;
+      padding: 8px;
+      border-radius: 5px;
+      border: none;
+      background-color: #2a2a2a;
+      color: #f0f0f0;
+    }
+
+    /* Esconde o input file padrão */
+    #inputArquivo {
+      display: none;
+    }
+
+    /* Botão customizado para escolher arquivo */
+    .btn-escolher-arquivo {
+      padding: 10px 16px;
+      background-color: #3f51b5;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+
+    .btn-escolher-arquivo:hover {
+      background-color: #303f9f;
+    }
+
+    /* Botão enviar arquivo */
+    .btn-enviar-arquivo {
+      padding: 10px 16px;
+      background-color: #f44336;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-enviar-arquivo:hover {
+      background-color: #d32f2f;
+    }
+
+    .arquivo-card {
+      background-color: #2a2a2a;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+
+    .arquivo-card strong {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 1.1em;
+      word-break: break-word;
+    }
+
+    .arquivo-card button {
+      margin-right: 10px;
+      background-color: #3f51b5;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .arquivo-card button:hover {
+      background-color: #303f9f;
+    }
+
+    .arquivo-card button[title="Excluir"] {
+      background-color: #b91c1c;
+    }
+
+    .arquivo-card button[title="Excluir"]:hover {
+      background-color: #7f1212;
+    }
+
+    .icone {
+      font-size: 40px;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <h1>Pastas</h1>
+      <div id="listaPastas"></div>
+      <input type="text" id="novaPastaInput" placeholder="Nova pasta..." />
+      <button id="btnCriarPasta">Criar Pasta</button>
+    </div>
+    <div class="main">
+      <h2 id="tituloPasta">Selecione uma pasta</h2>
+
+      <!-- Pesquisa de arquivos -->
+      <input type="text" id="pesquisaArquivos" placeholder="Pesquisar arquivos..." style="display:none;" />
+
+      <!-- Upload de arquivo -->
+      <form id="formUpload" style="display:none;" class="form-upload">
+        <label for="inputArquivo" class="btn-escolher-arquivo">Escolher arquivo</label>
+        <input type="file" id="inputArquivo" required />
+        <button type="submit" class="btn-enviar-arquivo">📤 Enviar</button>
+      </form>
+
+      <div id="arquivosGrid"></div>
+    </div>
+  </div>
+
+  <script>
+    let pastaSelecionada = null;
+    let arquivosNaPasta = [];
+
+    function carregarPastas() {
+      const pastas = JSON.parse(localStorage.getItem("pastas")) || [];
+      const container = document.getElementById("listaPastas");
+      container.innerHTML = "";
+
+      pastas.forEach((pasta) => {
+        const div = document.createElement("div");
+        div.className = "pasta";
+        if (pasta === pastaSelecionada) {
+          div.classList.add("selecionada");
+        }
+
+        const nomeSpan = document.createElement("span");
+        nomeSpan.textContent = pasta;
+        nomeSpan.style.flexGrow = "1";
+        nomeSpan.style.userSelect = "none";
+        nomeSpan.onclick = () => selecionarPasta(pasta, div);
+
+        const btnExcluir = document.createElement("button");
+        btnExcluir.className = "btn-excluir-pasta";
+        btnExcluir.title = `Excluir pasta "${pasta}"`;
+        btnExcluir.textContent = "×";
+        btnExcluir.onclick = (e) => {
+          e.stopPropagation();
+          if (confirm(`Deseja excluir a pasta "${pasta}" e todos os seus arquivos?`)) {
+            excluirPasta(pasta);
+          }
+        };
+
+        div.appendChild(nomeSpan);
+        div.appendChild(btnExcluir);
+        container.appendChild(div);
+      });
+    }
+
+    function criarPasta() {
+      const input = document.getElementById("novaPastaInput");
+      const nome = input.value.trim();
+      if (!nome) return alert("Digite um nome para a pasta.");
+
+      const pastas = JSON.parse(localStorage.getItem("pastas")) || [];
+      if (pastas.includes(nome)) {
+        alert("Essa pasta já existe.");
+        return;
+      }
+      pastas.push(nome);
+      localStorage.setItem("pastas", JSON.stringify(pastas));
+      input.value = "";
+      carregarPastas();
+    }
+
+    document.getElementById("btnCriarPasta").addEventListener("click", criarPasta);
+
+    function selecionarPasta(pasta, elemento) {
+      pastaSelecionada = pasta;
+      document.getElementById("tituloPasta").innerText = `📁 ${pasta}`;
+      document.getElementById("formUpload").style.display = "flex";
+      const pesquisa = document.getElementById("pesquisaArquivos");
+      pesquisa.style.display = "block";
+      pesquisa.value = "";
+      pesquisa.oninput = () => filtrarArquivos(pesquisa.value);
+
+      const botoes = document.querySelectorAll(".pasta");
+      botoes.forEach((btn) => btn.classList.remove("selecionada"));
+      elemento.classList.add("selecionada");
+
+      carregarArquivosDaPasta(pasta);
+    }
+
+    function carregarArquivosDaPasta(pasta) {
+      const arquivosPorPasta = JSON.parse(localStorage.getItem("arquivosPorPasta")) || {};
+      arquivosNaPasta = arquivosPorPasta[pasta] || [];
+      exibirArquivos(pasta, arquivosNaPasta);
+    }
+
+    function exibirArquivos(pasta, arquivos) {
+      const container = document.getElementById("arquivosGrid");
+      container.innerHTML = "";
+
+      if (arquivos.length === 0) {
+        container.innerHTML = "<p>Nenhum arquivo nesta pasta.</p>";
+        return;
+      }
+
+      arquivos.forEach((arquivo, index) => {
+        const card = document.createElement("div");
+        card.className = "arquivo-card";
+        card.innerHTML = `
+          <div class="icone">📄</div>
+          <strong title="${arquivo.nome}">${arquivo.nome}</strong>
+          <div>
+            <button onclick="visualizarArquivo('${pasta}', ${index})" title="Visualizar">👁️</button>
+            <button onclick="baixarArquivo('${pasta}', ${index})" title="Baixar">⬇️</button>
+            <button onclick="excluirArquivo('${pasta}', ${index})" title="Excluir">🗑️</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function filtrarArquivos(texto) {
+      const textoLower = texto.toLowerCase();
+      const filtrados = arquivosNaPasta.filter(a => a.nome.toLowerCase().includes(textoLower));
+      exibirArquivos(pastaSelecionada, filtrados);
+    }
+
+    function visualizarArquivo(pasta, index) {
+      const arquivo = arquivosNaPasta[index];
+      if (!arquivo) return;
+
+      const blob = dataURLtoBlob(arquivo.conteudo);
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    }
+
+    function dataURLtoBlob(dataURL) {
+      const [header, base64] = dataURL.split(",");
+      const mime = header.match(/:(.*?);/)[1];
+      const binary = atob(base64);
+      const array = [];
+      for (let i = 0; i < binary.length; i++) {
+        array.push(binary.charCodeAt(i));
+      }
+      return new Blob([new Uint8Array(array)], { type: mime });
+    }
+
+    function baixarArquivo(pasta, index) {
+      const arquivo = arquivosNaPasta[index];
+      if (!arquivo) return;
+
+      const a = document.createElement('a');
+      a.href = arquivo.conteudo;
+      a.download = arquivo.nome;
+      a.click();
+    }
+
+    function excluirArquivo(pasta, index) {
+      arquivosNaPasta.splice(index, 1);
+
+      // Atualiza localStorage
+      const arquivosPorPasta = JSON.parse(localStorage.getItem("arquivosPorPasta")) || {};
+      arquivosPorPasta[pasta] = arquivosNaPasta;
+      localStorage.setItem("arquivosPorPasta", JSON.stringify(arquivosPorPasta));
+
+      filtrarArquivos(document.getElementById("pesquisaArquivos").value);
+    }
+
+    function excluirPasta(pasta) {
+      // Remove pasta da lista
+      let pastas = JSON.parse(localStorage.getItem("pastas")) || [];
+      let arquivosPorPasta = JSON.parse(localStorage.getItem("arquivosPorPasta")) || {};
+
+      pastas = pastas.filter(p => p !== pasta);
+      delete arquivosPorPasta[pasta];
+
+      localStorage.setItem("pastas", JSON.stringify(pastas));
+      localStorage.setItem("arquivosPorPasta", JSON.stringify(arquivosPorPasta));
+
+      // Se a pasta excluída era a selecionada, limpa a seleção
+      if (pastaSelecionada === pasta) {
+        pastaSelecionada = null;
+        arquivosNaPasta = [];
+        document.getElementById("tituloPasta").innerText = "Selecione uma pasta";
+        document.getElementById("formUpload").style.display = "none";
+        document.getElementById("pesquisaArquivos").style.display = "none";
+        document.getElementById("pesquisaArquivos").value = "";
+        document.getElementById("arquivosGrid").innerHTML = "";
+      }
+
+      carregarPastas();
+    }
+
+    document.getElementById("formUpload").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const input = document.getElementById("inputArquivo");
+      const file = input.files[0];
+      if (!file || !pastaSelecionada) return alert("Selecione um arquivo e uma pasta.");
+
+      const reader = new FileReader();
+      reader.onload = function () {
+        const conteudo = reader.result;
+        const arquivosPorPasta = JSON.parse(localStorage.getItem("arquivosPorPasta")) || {};
+
+        if (!arquivosPorPasta[pastaSelecionada]) {
+          arquivosPorPasta[pastaSelecionada] = [];
+        }
+
+        arquivosPorPasta[pastaSelecionada].push({
+          nome: file.name,
+          conteudo: conteudo
+        });
+
+        localStorage.setItem("arquivosPorPasta", JSON.stringify(arquivosPorPasta));
+        input.value = "";
+        carregarArquivosDaPasta(pastaSelecionada);
+        document.getElementById("pesquisaArquivos").value = "";
+      };
+
+      reader.readAsDataURL(file);
+    });
+
+    window.onload = carregarPastas;
+  </script>
+</body>
+</html>
